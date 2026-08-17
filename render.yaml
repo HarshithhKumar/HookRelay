@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: linkplease-backend
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PSEUDOGRAM_BASE_URL
+        value: "https://pseudogram-api.onrender.com"
+      # PSEUDOGRAM_API_KEY should be added as a secret in the Render dashboard
+      - key: PSEUDOGRAM_API_KEY
+        fromDatabase: false
+
+  - type: worker
+    name: linkplease-dm-worker
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && python -u -c "from app.services.dm_worker import start_worker; start_worker()"
+    envVars:
+      - key: PSEUDOGRAM_BASE_URL
+        value: "https://pseudogram-api.onrender.com"
+      - key: PSEUDOGRAM_API_KEY
+        fromDatabase: false
+      # Worker tuning via environment
+      - key: DM_WORKER_MAX_ATTEMPTS
+        value: "5"
+      - key: DM_WORKER_RETRY_BASE_SECONDS
+        value: "30"
+      - key: DM_WORKER_SENDING_LEASE_SECONDS
+        value: "120"
+
+  - type: worker
+    name: linkplease-reconciliation-worker
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && python -u -c "from app.services.reconciliation import start_worker; start_worker()"
+    envVars:
+      - key: PSEUDOGRAM_BASE_URL
+        value: "https://pseudogram-api.onrender.com"
+      - key: PSEUDOGRAM_API_KEY
+        fromDatabase: false
+
+# Managed PostgreSQL database for production
+databases:
+  - name: linkplease-db
+    plan: starter
+    region: oregon
+
+# Run migrations on deploy (Render will run this as a post-deploy hook if supported)
+# It's recommended to configure a 'releaseCommand' on the web service in the Render UI:
+# cd backend && python -c "from alembic.config import Config; from alembic import command; cfg = Config('alembic.ini'); command.upgrade(cfg, 'head')"
