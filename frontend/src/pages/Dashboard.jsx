@@ -61,7 +61,7 @@ export default function Dashboard(){
       {/* Hero Section */}
       <div className="hero">
         <div className="hero-text">
-          <div className="eyebrow">LinkPLEASE Automation</div>
+          <div className="eyebrow">LinkPlease Automation</div>
           <h1>Turn comments into conversations.</h1>
           <p>Automatically match Instagram comments, queue DMs, and track delivery across your creator workflow.</p>
         </div>
@@ -162,7 +162,7 @@ export default function Dashboard(){
           <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 'var(--space-lg)', marginTop: 'var(--space-2xl)'}}>
             {/* How It Works */}
             <div className="card">
-              <div className="card-header">How LinkPLEASE Works</div>
+              <div className="card-header">How LinkPlease Works</div>
               <div style={{marginTop: 'var(--space-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--space-md)'}}>
                 {[
                   {num: '01', title: 'Create keyword rule', desc: 'Define automation rules with keywords'},

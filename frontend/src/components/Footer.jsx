@@ -1,36 +1,57 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { getHealth } from '../api'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const [healthOk, setHealthOk] = useState(false)
+
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        await getHealth()
+        setHealthOk(true)
+      } catch {
+        setHealthOk(false)
+      }
+    }
+    checkHealth()
+  }, [])
 
   return (
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-section">
-          <h4>LinkPLEASE</h4>
+          <h4>LinkPlease</h4>
           <p>Instagram comment-to-DM automation for creators.</p>
         </div>
 
         <div className="footer-section">
           <h4>Product</h4>
           <div className="footer-links">
-            <a href="/" className="footer-link">Dashboard</a>
-            <a href="/rules" className="footer-link">Automation Rules</a>
-            <a href="/status" className="footer-link">System Status</a>
+            <Link to="/" className="footer-link">Dashboard</Link>
+            <Link to="/rules" className="footer-link">Automation Rules</Link>
+            <Link to="/status" className="footer-link">System Status</Link>
           </div>
         </div>
 
         <div className="footer-section">
-          <h4>Status</h4>
-          <div className="flex" style={{alignItems: 'center', gap: '8px'}}>
+          <h4>System</h4>
+          <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
             <div className="status-dot" style={{width: '8px', height: '8px'}}></div>
-            <span>System Operational</span>
+            <span style={{fontSize: '0.9rem', color: 'var(--text-muted)'}}>
+              {healthOk ? 'System Operational' : 'Service Unavailable'}
+            </span>
+          </div>
+          <div style={{fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6'}}>
+            API Health<br/>
+            Automation Ready
           </div>
         </div>
       </div>
 
       <div className="footer-bottom">
-        <span>© {currentYear} LinkPLEASE. Automation infrastructure for creator workflows.</span>
+        <span>© {currentYear} LinkPlease. Automation infrastructure for creator workflows.</span>
       </div>
     </footer>
   )

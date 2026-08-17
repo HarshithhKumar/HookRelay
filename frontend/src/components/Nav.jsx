@@ -10,7 +10,7 @@ const Nav = () => {
       <div className="header-content">
         <div className="logo-section">
           <div>
-            <div className="brand">LinkPLEASE</div>
+            <div className="brand">LinkPlease</div>
             <div className="brand-tagline">Instagram comment-to-DM automation</div>
           </div>
         </div>

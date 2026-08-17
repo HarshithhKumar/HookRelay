@@ -54,8 +54,8 @@ export default function Rules(){
     <div>
       {/* Header */}
       <div style={{marginBottom: 'var(--space-2xl)'}}>
-        <h1 style={{margin: 0, fontSize: '2rem', fontWeight: '800'}}>Automation Rules</h1>
-        <p style={{margin: 'var(--space-sm) 0 0', color: 'var(--text-muted)'}}>
+        <h1 style={{margin: 0, fontSize: '2rem', fontWeight: '600', letterSpacing: '-0.8px'}}>Automation Rules</h1>
+        <p style={{margin: 'var(--space-sm) 0 0', color: 'var(--text-muted)', fontSize: '1rem'}}>
           Define automation rules. When someone comments with a keyword, we automatically send them a DM.
         </p>
       </div>
@@ -64,7 +64,7 @@ export default function Rules(){
       <div className="grid-2">
         {/* Existing Rules Column */}
         <div>
-          <h2 style={{fontSize: '1.25rem', fontWeight: '700', marginBottom: 'var(--space-lg)'}}>
+          <h2 style={{fontSize: '1.25rem', fontWeight: '500', marginBottom: 'var(--space-lg)', letterSpacing: '-0.3px'}}>
             {rules.length > 0 ? 'Your Rules' : 'No Rules Yet'}
           </h2>
 
