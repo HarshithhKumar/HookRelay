@@ -41,6 +41,11 @@ class Settings:
             os.getenv("DM_WORKER_SENDING_LEASE_SECONDS", "120"),
         )
 
+        # Frontend allowed origin for production (optional). If unset, production origin
+        # must be configured via FRONTEND_URL environment variable on deploy.
+        # Local development origins are allowed separately in main.py.
+        self.frontend_url = os.getenv("FRONTEND_URL", "").strip()
+
 
 @lru_cache
 def get_settings() -> Settings:
