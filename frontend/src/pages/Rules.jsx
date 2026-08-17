@@ -10,78 +10,191 @@ export default function Rules(){
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(null)
 
-  const fetchRules = async () =>{
-    setLoading(true); setError(null)
-    try{
+  const fetchRules = async () => {
+    setLoading(true)
+    setError(null)
+    try {
       const data = await getRules()
       setRules(data)
-    }catch(err){
+    } catch (err) {
       setError(err)
-    }finally{setLoading(false)}
+    } finally {
+      setLoading(false)
+    }
   }
 
-  useEffect(()=>{fetchRules()}, [])
+  useEffect(() => { fetchRules() }, [])
 
-  const submit = async (e) =>{
-    e.preventDefault(); setSubmitting(true); setError(null); setSuccess(null)
-    const trimmedKeyword = keyword.trim();
-    const trimmedMsg = dmMessage.trim();
-    if(!trimmedKeyword || !trimmedMsg){setError('Both fields are required'); setSubmitting(false); return}
-    try{
+  const submit = async (e) => {
+    e.preventDefault()
+    setSubmitting(true)
+    setError(null)
+    setSuccess(null)
+    const trimmedKeyword = keyword.trim()
+    const trimmedMsg = dmMessage.trim()
+    if (!trimmedKeyword || !trimmedMsg) {
+      setError('Both keyword and message are required')
+      setSubmitting(false)
+      return
+    }
+    try {
       await createRule({keyword: trimmedKeyword, dm_message: trimmedMsg})
-      setSuccess('Rule created')
-      setKeyword(''); setDmMessage('')
-      fetchRules()
-    }catch(err){
-      setError(err.body || err.message || String(err))
-    }finally{setSubmitting(false)}
+      setSuccess('✓ Rule created successfully')
+      setKeyword('')
+      setDmMessage('')
+      await fetchRules()
+    } catch (err) {
+      setError(err.body?.message || err.message || 'Failed to create rule')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-        <div>
-          <h2 style={{fontSize:20,fontWeight:700}}>Automation Rules</h2>
-          <div className="small muted">Define what should happen when someone comments on your posts.</div>
-        </div>
+      {/* Header */}
+      <div style={{marginBottom: 'var(--space-2xl)'}}>
+        <h1 style={{margin: 0, fontSize: '2rem', fontWeight: '800'}}>Automation Rules</h1>
+        <p style={{margin: 'var(--space-sm) 0 0', color: 'var(--text-muted)'}}>
+          Define automation rules. When someone comments with a keyword, we automatically send them a DM.
+        </p>
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'1fr 360px',gap:16}}>
+      {/* Main Grid */}
+      <div className="grid-2">
+        {/* Existing Rules Column */}
         <div>
-          <h3 style={{marginTop:0}}>Existing rules</h3>
-          {loading && <div>Loading...</div>}
-          {error && <div className="alert error">{typeof error === 'string' ? error : JSON.stringify(error)}</div>}
-          {!loading && rules.length === 0 && <div className="empty">No automation rules yet. Create your first rule using the form.</div>}
-          <div style={{marginTop:12}}>
-            {rules.map(r => (
-              <div key={r.rule_id} className="card" style={{marginBottom:12}}>
-                <div className="label">Keyword</div>
-                <div style={{fontWeight:700,fontSize:16}}>{r.keyword}</div>
-                <div className="label" style={{marginTop:8}}>Message</div>
-                <div style={{marginTop:6}}>{r.dm_message}</div>
-                <div className="small muted" style={{marginTop:8}}>ID: {r.rule_id}</div>
+          <h2 style={{fontSize: '1.25rem', fontWeight: '700', marginBottom: 'var(--space-lg)'}}>
+            {rules.length > 0 ? 'Your Rules' : 'No Rules Yet'}
+          </h2>
+
+          {loading && (
+            <div className="card" style={{textAlign: 'center', padding: 'var(--space-2xl)'}}>
+              <div className="loading">Loading rules...</div>
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="alert error">
+              <span>⚠</span>
+              <div>
+                <div style={{fontWeight: '600'}}>Failed to load rules</div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {!loading && rules.length === 0 && !error && (
+            <div className="card" style={{textAlign: 'center', padding: 'var(--space-2xl)'}}>
+              <div className="empty">
+                <div className="empty-title">No automation rules yet</div>
+                <div className="empty-description">
+                  Create your first keyword rule to start automatically responding to comments.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!loading && rules.length > 0 && (
+            <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--space-md)'}}>
+              {rules.map((rule) => (
+                <div key={rule.rule_id} className="card">
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-md)'}}>
+                    <div style={{
+                      display: 'inline-block',
+                      background: 'var(--accent-bg)',
+                      color: 'var(--accent)',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600'
+                    }}>
+                      {rule.keyword}
+                    </div>
+                  </div>
+                  <div style={{color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 'var(--space-sm)'}}>
+                    DM Template
+                  </div>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: 'var(--space-md)',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '0.95rem',
+                    lineHeight: '1.6',
+                    marginBottom: 'var(--space-md)',
+                    borderLeft: '2px solid var(--accent)'
+                  }}>
+                    {rule.dm_message}
+                  </div>
+                  <div style={{fontSize: '0.75rem', color: 'var(--text-subtle)', fontFamily: 'monospace'}}>
+                    ID: {rule.rule_id}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
+        {/* Create Rule Column */}
         <div>
-          <div className="card">
-            <h3 style={{marginTop:0}}>Create Rule</h3>
-            <form onSubmit={submit} className="form" style={{marginTop:8}}>
-              {success && <div className="alert success" style={{marginBottom:8}}>{success}</div>}
-              {error && <div className="alert error" style={{marginBottom:8}}>{typeof error === 'string' ? error : JSON.stringify(error)}</div>}
-              <div className="row">
-                <label>Keyword</label>
-                <input value={keyword} onChange={e=>setKeyword(e.target.value)} required />
+          <div className="card" style={{height: 'fit-content'}}>
+            <div className="card-header">Create New Rule</div>
+            <p style={{color: 'var(--text-muted)', fontSize: '0.9rem', margin: '0 0 var(--space-lg)'}}>
+              Set up a new automation rule
+            </p>
+
+            <form onSubmit={submit} className="form">
+              {success && (
+                <div className="alert success">
+                  <span>✓</span>
+                  <div>{success}</div>
+                </div>
+              )}
+              {error && (
+                <div className="alert error">
+                  <span>⚠</span>
+                  <div>{error}</div>
+                </div>
+              )}
+
+              <div className="form-group">
+                <label htmlFor="keyword" className="form-label">Keyword</label>
+                <input
+                  id="keyword"
+                  className="form-input"
+                  type="text"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  placeholder="e.g., price, shipping, discount"
+                  required
+                />
+                <div style={{fontSize: '0.8rem', color: 'var(--text-subtle)', marginTop: '4px'}}>
+                  Trigger when comments contain this word
+                </div>
               </div>
-              <div className="row">
-                <label>DM Message</label>
-                <textarea value={dmMessage} onChange={e=>setDmMessage(e.target.value)} required rows={3} />
+
+              <div className="form-group">
+                <label htmlFor="message" className="form-label">DM Message</label>
+                <textarea
+                  id="message"
+                  className="form-textarea"
+                  value={dmMessage}
+                  onChange={(e) => setDmMessage(e.target.value)}
+                  placeholder="Message to send automatically..."
+                  required
+                />
+                <div style={{fontSize: '0.8rem', color: 'var(--text-subtle)', marginTop: '4px'}}>
+                  Message sent to users who match the keyword
+                </div>
               </div>
-              <div style={{display:'flex',justifyContent:'flex-end'}}>
-                <button disabled={submitting} className="button primary">Create Rule</button>
-              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="button primary"
+                style={{width: '100%'}}
+              >
+                {submitting ? '⏳ Creating...' : '✓ Create Rule'}
+              </button>
             </form>
           </div>
         </div>
