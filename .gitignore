@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+backend/venv/
+venv/
+# Local venv at repo root
+
+# Local SQLite database (Stage 2 fallback)
+backend/linkplease.db
+backend/*.db
+
+# Environment variables
+.env
+backend/.env
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Pytest cache
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
