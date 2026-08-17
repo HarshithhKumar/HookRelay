@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: linkplease
+      POSTGRES_PASSWORD: linkplease
+      POSTGRES_DB: linkplease
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      # Use Compose .env or environment to supply secrets like PSEUDOGRAM_API_KEY
+      - DATABASE_URL=postgresql://linkplease:linkplease@db:5432/linkplease
+      - PSEUDOGRAM_BASE_URL=https://pseudogram-api.onrender.com
+      - PSEUDOGRAM_API_KEY=${PSEUDOGRAM_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - DM_WORKER_MAX_ATTEMPTS=5
+      - DM_WORKER_RETRY_BASE_SECONDS=30
+      - DM_WORKER_SENDING_LEASE_SECONDS=120
+      # To disable in-process workers in some runs, set DISABLE_BACKGROUND_WORKERS=1 in env
+    volumes:
+      - ./backend:/app:cached
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://localhost:8000/health').getcode()==200 else sys.exit(1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  db_data:
