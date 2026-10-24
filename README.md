@@ -1,8 +1,8 @@
-# LinkPlease
+# HookRelay
 
 > Instagram comment-to-DM automation built for reliability.
 
-LinkPlease turns keyword-triggered Instagram comments into reliable DM jobs. A rule matches a comment, the webhook is verified, the event is stored durably, and the app sends the outbound message through a mock upstream API with retries, deduplication, and final reconciliation built in.
+HookRelay turns keyword-triggered Instagram comments into reliable DM jobs. A rule matches a comment, the webhook is verified, the event is stored durably, and the app sends the outbound message through a mock upstream API with retries, deduplication, and final reconciliation built in.
 
 The product is simple in concept but careful in execution: the hard part is not sending the message, it is making sure it is not lost, duplicated, or miscounted under messy real-world conditions.
 
@@ -77,7 +77,7 @@ A DM job cannot be created twice for the same rule and recipient combination. Th
 Outbound requests use a stable idempotency key:
 
 ```text
-linkplease-dm-job-{job_id}
+hookrelay-dm-job-{job_id}
 ```
 
 This allows retries to keep the same logical identity even when the provider or the worker retries the request.
@@ -250,7 +250,7 @@ python -m venv .venv
 # macOS / Linux
 # source .venv/bin/activate
 pip install -r requirements.txt
-set DATABASE_URL=sqlite:///./linkplease.db
+set DATABASE_URL=sqlite:///./hookrelay.db
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -322,7 +322,7 @@ That is a deliberate choice for this codebase: it keeps deployment simple while 
 ## Project structure
 
 ```text
-LinkPLEASE/
+HookRelay/
 ├── backend/
 │   ├── alembic/
 │   ├── app/
@@ -367,6 +367,6 @@ The app is designed to be reliable within realistic boundaries, not to claim imp
 
 ## Final note
 
-LinkPlease is a practical engineering project built around a simple principle: when outbound automation depends on external systems and repeated inbound events, durable state matters more than cleverness.
+HookRelay is a practical engineering project built around a simple principle: when outbound automation depends on external systems and repeated inbound events, durable state matters more than cleverness.
 
 It is built to be understandable, dependable, and easy to run locally while still reflecting the realities of an imperfect upstream API and an asynchronous event stream.
