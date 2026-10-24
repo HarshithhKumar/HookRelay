@@ -1,6 +1,11 @@
+import os
 import sys
 from collections.abc import Generator
 from pathlib import Path
+
+os.environ.setdefault("PSEUDOGRAM_API_KEY", "test-secret-key")
+os.environ.setdefault("APP_ENV", "development")
+os.environ.setdefault("DATABASE_URL", "sqlite://")
 
 import pytest
 from fastapi.testclient import TestClient
@@ -39,16 +44,15 @@ def db_engine():
         poolclass=StaticPool,
     )
 
-    # Rebind the app-level SQLAlchemy engine/session to the test database so the
-    # FastAPI dependency and the tests operate on the same schema.
+    # Rebind the app's global engine/session to the test DB before schema creation.
     app_database.engine = engine
     app_database.SessionLocal = sessionmaker(
         autocommit=False,
         autoflush=False,
         bind=engine,
     )
-    app_database.Base.metadata.create_all(bind=engine)
 
+    app_database.Base.metadata.create_all(bind=engine)
     yield engine
     engine.dispose()
 
