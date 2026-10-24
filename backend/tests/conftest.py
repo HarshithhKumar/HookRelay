@@ -12,8 +12,8 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
+from app import database as app_database  # noqa: E402
 from app.config import get_settings  # noqa: E402
-from app.database import Base, get_db  # noqa: E402
 from app.main import app as fastapi_app  # noqa: E402
 import app.models  # noqa: E402, F401
 
@@ -24,6 +24,7 @@ TEST_API_KEY = "test-secret-key"
 def configure_test_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PSEUDOGRAM_API_KEY", TEST_API_KEY)
     monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("DATABASE_URL", "sqlite://")
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
@@ -37,19 +38,24 @@ def db_engine():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    Base.metadata.create_all(engine)
+
+    # Rebind the app-level SQLAlchemy engine/session to the test database so the
+    # FastAPI dependency and the tests operate on the same schema.
+    app_database.engine = engine
+    app_database.SessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+    app_database.Base.metadata.create_all(bind=engine)
+
     yield engine
     engine.dispose()
 
 
 @pytest.fixture()
 def db_session(db_engine) -> Generator[Session, None, None]:
-    SessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=db_engine,
-    )
-    session = SessionLocal()
+    session = app_database.SessionLocal()
     try:
         yield session
     finally:
@@ -58,20 +64,14 @@ def db_session(db_engine) -> Generator[Session, None, None]:
 
 @pytest.fixture()
 def client(db_engine) -> Generator[TestClient, None, None]:
-    SessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=db_engine,
-    )
-
     def override_get_db() -> Generator[Session, None, None]:
-        db = SessionLocal()
+        db = app_database.SessionLocal()
         try:
             yield db
         finally:
             db.close()
 
-    fastapi_app.dependency_overrides[get_db] = override_get_db
+    fastapi_app.dependency_overrides[app_database.get_db] = override_get_db
     with TestClient(fastapi_app) as test_client:
         yield test_client
     fastapi_app.dependency_overrides.clear()
