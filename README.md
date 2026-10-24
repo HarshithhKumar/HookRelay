@@ -17,6 +17,36 @@ HookRelay models a common backend challenge: receiving external events and turni
 
 > **Integration note:** Outbound messaging currently uses **PseudoGram**, a mock upstream API. This repository does not claim a live Instagram integration.
 
+## Screenshots
+
+These screenshots show the application running locally. Status values and feature descriptions are shown as captured and are not independent verification of integrations or delivery behavior.
+
+### Dashboard
+
+![HookRelay dashboard](docs/screenshots/dashboard.png)
+
+Dashboard overview from the local development app.
+
+### Automation rules
+
+![HookRelay automation rules](docs/screenshots/automation-rules.png)
+
+Rule listing and creation form from the local development app.
+
+### System status
+
+![HookRelay system status](docs/screenshots/system-status.png)
+
+System status page from the local development app.
+
+### Monitoring
+
+![HookRelay monitoring view](docs/screenshots/monitoring.png)
+
+Monitoring information displayed in the local development app.
+
+---
+
 ## At a glance
 
 - **Backend:** FastAPI, SQLAlchemy, Alembic
