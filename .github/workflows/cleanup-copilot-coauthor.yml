@@ -1,0 +1,51 @@
+name: One-time commit attribution cleanup
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/cleanup-copilot-coauthor.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out complete repository history
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install git-filter-repo
+        run: |
+          python3 -m pip install --user git-filter-repo
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Remove Copilot co-author trailers from commit history
+        run: |
+          git filter-repo --force --prune-empty never --prune-degenerate never --refs refs/heads/main --commit-callback '
+          commit.message = b"\n".join(
+              line for line in commit.message.split(b"\n")
+              if not line.strip().lower().startswith(b"co-authored-by: copilot")
+          )
+          commit.message = commit.message.rstrip(b"\n") + b"\n"
+          '
+          git checkout --force main
+
+      - name: Push rewritten history and remove this temporary workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git remote remove origin || true
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+          git push --force origin refs/heads/main:refs/heads/main
+          rm -f .github/workflows/cleanup-copilot-coauthor.yml
+          git add -A
+          git -c user.name="Harshith Kumar" -c user.email="harshithkumar2023@gmail.com" commit -m "Remove temporary history cleanup workflow"
+          git push origin refs/heads/main:refs/heads/main
